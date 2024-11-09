@@ -1,0 +1,94 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2112                                 |
+|   \\  /    A nd           | Website:                                        |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     simpleFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         3000;
+
+deltaT          1;
+
+writeControl    timeStep;
+
+writeInterval   50;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+adjustTimeStep no;
+
+libs
+(
+    "libsolverFunctionObjects.so"
+);
+
+functions
+{
+    S
+    {
+        type            scalarTransport;
+        writeInterval   outputTime;
+        field           S;
+        D               0.0;
+        schemesField    S;
+        nCorr           0;
+        resetOnStartUp  false;
+    }
+
+    #includeFunc solverInfo
+
+    forces
+    {
+        type            forceCoeffs;
+        libs            ("libforces.so");
+        writeControl    adjustableRunTime;
+        writeInterval   0.01;
+
+        patches
+        (
+            body
+        );
+
+        log         true;
+        rho         rhoInf;
+        rhoInf      1;
+        CofR        (0 0 0);
+        liftDir     (0 0 1);
+        dragDir     (0 1 0);
+        pitchAxis   (1 0 0);
+        magUInf     0.02;
+        lRef        #eval { 4*0.02562 / 0.804201 };
+        Aref        0.02562;
+    }
+}
+
+// ************************************************************************* //

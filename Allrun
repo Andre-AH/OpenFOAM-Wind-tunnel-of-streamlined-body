@@ -1,0 +1,90 @@
+#!/bin/bash
+
+cd ${0%/*} || exit 1
+clear
+source Allclean
+
+#------------------------------------------------------------------------------
+if [ -f cad/backgroundMesh.unv ];
+then
+    echo "   - Background mesh exist, proceed..."
+else
+    echo "   - No background mesh exist, please create one'"
+    echo ""
+    exit
+fi
+
+
+#------------------------------------------------------------------------------
+echo -e "\n
+Start meshing
+-------------------------------------------------------------------------------
+"
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Create background mesh"
+ideasUnvToFoam cad/backgroundMesh.unv > logMeshing
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Decompose the background mesh into 4 domains"
+decomposePar >> logMeshing
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Meshing with snappyHexMesh (~ 5 minutes)"
+mpirun -np 4 snappyHexMesh -parallel -overwrite >> logMeshing
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Reconstruct the mesh (optional)"
+reconstructParMesh -constant >> logMeshing
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Scale the mesh"
+transformPoints -scale "(0.1 0.1 0.1)" >> logMeshing
+
+
+#------------------------------------------------------------------------------
+echo -e "\n
+-------------------------------------------------------------------------------
+End Meshing\n
+"
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Copy 0.orig to 0"
+rm -rf 0
+cp -r 0.orig 0
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Start simulation"
+echo -e "   - Decompose the case for parallel run"
+decomposePar -force > logSolver
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Renumber mesh for speedup (~5-15%)"
+mpirun -np 4 renumberMesh -overwrite -parallel >> logSolver
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Start steady-state calculation"
+mpirun -np 4 simpleFoam -parallel >> logSolver
+
+
+#------------------------------------------------------------------------------
+echo -e "   - Simulation ended\n\n"
+reconstructPar
+
+#------------------------------------------------------------------------------
+
+
+echo -e "   - Creating Paraview file\n\n"
+touch results.foam
+
+
+#------------------------------------------------------------------------------

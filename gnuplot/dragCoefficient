@@ -1,0 +1,24 @@
+#!/bin/gnuplot
+
+# Set terminal to PNG (for non-interactive mode)
+set terminal png
+
+# Set the output file
+set output 'dragCoefficient.png'
+
+# Set up the plot
+set grid
+set xlabel 'Iteration [-]'
+set ylabel 'Drag Coefficient'
+
+# Plot the data
+plot '../postProcessing/forces/0/coefficient.dat' using 1:2 w l lc rgb 'black' lw 2.5 t ''
+
+# Optional: Uncomment this if you want to adjust or replot later
+# replot
+
+# Close the output
+set output
+
+
+#------------------------------------------------------------------------------
