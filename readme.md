@@ -2,6 +2,8 @@
 
 This OpenFOAM case simulates a **steady-state wind tunnel test** for a random streamlined body defined by a CAD file (body.stl). The goal is to evaluate the aerodynamic performance, specifically calculating the **drag coefficient** of the body in a controlled airflow environment.
 
+![Alt text](results.png)
+
 ## Project Structure
 - **/constant/triSurface directory/body.stl**: Contains the geometry of the test body.
 - **/system, /constant, /0**: Standard OpenFOAM directories with setup files for boundary conditions, mesh, and solver configuration.
